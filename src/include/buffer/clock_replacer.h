@@ -1,15 +1,3 @@
-//===----------------------------------------------------------------------===//
-//
-//                         BusTub
-//
-// clock_replacer.h
-//
-// Identification: src/include/buffer/clock_replacer.h
-//
-// Copyright (c) 2015-2019, Carnegie Mellon University Database Group
-//
-//===----------------------------------------------------------------------===//
-
 #pragma once
 
 #include <list>
@@ -18,23 +6,15 @@
 
 #include "buffer/replacer.h"
 #include "common/config.h"
+#include "buffer/frame.h"
 
+
+using std::vector;
 namespace bustub {
-
-/**
- * ClockReplacer implements the clock replacement policy, which approximates the Least Recently Used policy.
- */
 class ClockReplacer : public Replacer {
- public:
-  /**
-   * Create a new ClockReplacer.
-   * @param num_pages the maximum number of pages the ClockReplacer will be required to store
-   */
+ public: 
   explicit ClockReplacer(size_t num_pages);
 
-  /**
-   * Destroys the ClockReplacer.
-   */
   ~ClockReplacer() override;
 
   bool Victim(frame_id_t *frame_id) override;
@@ -46,7 +26,20 @@ class ClockReplacer : public Replacer {
   size_t Size() override;
 
  private:
-  // TODO(student): implement me!
+  size_t clock_hand = 0;
+  size_t size = 0;
+  size_t num_pages ;
+  vector<Frame> frames;
+  size_t NOT_FOUND_INDEX = -1;
+
+  Frame * FindFrame(frame_id_t frame_id);
+  size_t FindMinframeIndex();
+  void PinFrame(size_t frame_index);
+  void UnPinFrame(Frame* frame);
+  frame_id_t VictimFrame(size_t frame_index);
+  size_t FindFrameIndex(frame_id_t frame_id);
+  bool VictimMinFrame(frame_id_t *frame_id);
+  void UpdateClockHand(size_t frame_index);
 };
 
-}  // namespace bustub
+}
