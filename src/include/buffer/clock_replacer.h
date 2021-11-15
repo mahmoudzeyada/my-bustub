@@ -8,8 +8,9 @@
 #include "buffer/replacer.h"
 #include "common/config.h"
 
-using std::vector;
+
 namespace bustub {
+  using std::vector;
 class ClockReplacer : public Replacer {
  public:
   explicit ClockReplacer(size_t num_pages);

@@ -60,7 +60,9 @@ void ClockReplacer::UpdateClockHand(size_t frame_index) {
 void ClockReplacer::Pin(frame_id_t frame_id) {
   size_t found_index = frame_id - 1;
   Frame frame = frames[found_index];
-  !frame.IsRemoved() && VictimFrame(found_index);
+  if (frame.IsRemoved()) { 
+		VictimFrame(found_index);
+	}
 }
 
 frame_id_t ClockReplacer::VictimFrame(size_t frame_index) {

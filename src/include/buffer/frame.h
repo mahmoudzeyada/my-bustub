@@ -19,7 +19,7 @@ class Frame {
  private:
   frame_id_t id;
   int ref;
-  int removable;
+  int removable = 0;
   int PIN_VALUE = 1;
   int UNPINNED_VALUE = 0;
   int REMOVED_VALUE = 1;
