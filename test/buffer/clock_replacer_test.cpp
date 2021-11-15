@@ -94,9 +94,8 @@ TEST(ClockReplacerTest, VictimAll) {
   clock_replacer.Victim(&value);
   EXPECT_EQ(0, clock_replacer.Size());
   bool res = clock_replacer.Victim(&value);
-  EXPECT_EQ(false,res);
+  EXPECT_EQ(false, res);
 }
-
 
 TEST(ClockReplacerTest, VictimFirstElementAfterFullRotation) {
   ClockReplacer clock_replacer(7);
@@ -121,4 +120,4 @@ TEST(ClockReplacerTest, VictimFirstElementAfterFullRotation) {
   EXPECT_EQ(0, clock_replacer.Size());
 }
 
-}
+}  // namespace bustub
