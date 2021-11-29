@@ -52,7 +52,6 @@ void LRUReplacer::Unpin(frame_id_t frame_id) {
 }
 
 bool LRUReplacer::ShouldUnPinFrame(frame_id_t frame_id) {
-  std::lock_guard<std::mutex> lock(latch_);
   bool should_bin = Size() < num_pages;
   if (should_bin) {
     queue tmp_pool = pool;
