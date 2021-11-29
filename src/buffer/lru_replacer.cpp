@@ -11,19 +11,60 @@
 //===----------------------------------------------------------------------===//
 
 #include "buffer/lru_replacer.h"
+#include <queue>
 
 namespace bustub {
 
-LRUReplacer::LRUReplacer(size_t num_pages) {}
+LRUReplacer::LRUReplacer(size_t num_pages) { this->num_pages = num_pages; }
 
 LRUReplacer::~LRUReplacer() = default;
 
-bool LRUReplacer::Victim(frame_id_t *frame_id) { return false; }
+bool LRUReplacer::Victim(frame_id_t *frame_id) {
+  bool should_victim = !pool.empty();
+  if (should_victim) {
+    *frame_id = pool.front();
+    pool.pop();
+  }
+  return should_victim;
+}
 
-void LRUReplacer::Pin(frame_id_t frame_id) {}
+void LRUReplacer::Pin(frame_id_t frame_id) {
+  queue tmp_pool = pool;
+  queue<frame_id_t> new_pool;
+  frame_id_t q_element;
+  while (!tmp_pool.empty()) {
+    q_element = tmp_pool.front();
+    if (q_element != frame_id) {
+      new_pool.push(q_element);
+    }
+    tmp_pool.pop();
+  }
+  pool = new_pool;
+}
 
-void LRUReplacer::Unpin(frame_id_t frame_id) {}
+void LRUReplacer::Unpin(frame_id_t frame_id) {
+  if (ShouldUnPinFrame(frame_id)) {
+    pool.push(frame_id);
+  }
+}
 
-size_t LRUReplacer::Size() { return 0; }
+bool LRUReplacer::ShouldUnPinFrame(frame_id_t frame_id) {
+  bool should_bin = Size() < num_pages;
+  if (should_bin) {
+    queue tmp_pool = pool;
+    frame_id_t q_element;
+    while (!tmp_pool.empty()) {
+      q_element = tmp_pool.front();
+      if (q_element == frame_id) {
+        should_bin = false;
+        break;
+      }
+      tmp_pool.pop();
+    }
+  }
+  return should_bin;
+}
+
+size_t LRUReplacer::Size() { return pool.size(); }
 
 }  // namespace bustub

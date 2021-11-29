@@ -14,13 +14,14 @@
 
 #include <list>
 #include <mutex>  // NOLINT
+#include <queue>
 #include <vector>
 
 #include "buffer/replacer.h"
 #include "common/config.h"
 
 namespace bustub {
-
+using namespace std;
 /**
  * LRUReplacer implements the lru replacement policy, which approximates the Least Recently Used policy.
  */
@@ -46,7 +47,9 @@ class LRUReplacer : public Replacer {
   size_t Size() override;
 
  private:
-  // TODO(student): implement me!
+  queue<frame_id_t> pool;
+  size_t num_pages;
+  bool ShouldUnPinFrame(frame_id_t frame_id);
 };
 
 }  // namespace bustub
