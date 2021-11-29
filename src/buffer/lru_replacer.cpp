@@ -68,6 +68,9 @@ bool LRUReplacer::ShouldUnPinFrame(frame_id_t frame_id) {
   return should_bin;
 }
 
-size_t LRUReplacer::Size() { return pool.size(); }
+size_t LRUReplacer::Size() { 
+  std::lock_guard<std::mutex> lock(latch_);
+  return pool.size(); 
+}
 
 }  // namespace bustub
