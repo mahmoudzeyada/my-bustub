@@ -59,7 +59,7 @@ bool BufferPoolManager::UnpinPageImpl(page_id_t page_id, bool is_dirty) {
   if (page->GetPinCount() == 0) {
     replacer_->Unpin(iterator->second);
   }
-  page->is_dirty_ = is_dirty;
+  page->is_dirty_ |= is_dirty;
   return true;
 }
 
