@@ -88,7 +88,7 @@ Page *BufferPoolManager::NewPageImpl(page_id_t *page_id) {
   if (IsAllBinned()) { return nullptr; }
   auto frame_id = Victim();
 
-  if (frame_id == -1) return nullptr;
+  if (frame_id == -1) { return nullptr; }
   *page_id = disk_manager_->AllocatePage();
   auto page = ProcessNewPage(frame_id, *page_id);
   return page;
@@ -97,7 +97,7 @@ Page *BufferPoolManager::NewPageImpl(page_id_t *page_id) {
 bool BufferPoolManager::IsAllBinned() {
   for (size_t i = 0; i < pool_size_; i++) {
     auto page = GetPages() + i;
-    if (page && page->GetPinCount() == 0) {
+    if (page->GetPinCount() == 0) {
       return false;
     }
   }
