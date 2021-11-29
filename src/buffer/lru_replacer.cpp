@@ -52,7 +52,7 @@ void LRUReplacer::Unpin(frame_id_t frame_id) {
 }
 
 bool LRUReplacer::ShouldUnPinFrame(frame_id_t frame_id) {
-  bool should_bin = Size() < num_pages;
+  bool should_bin = pool.size() < num_pages;
   if (should_bin) {
     queue tmp_pool = pool;
     frame_id_t q_element;
