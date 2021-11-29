@@ -47,6 +47,7 @@ class LRUReplacer : public Replacer {
   size_t Size() override;
 
  private:
+  std::mutex latch_;
   queue<frame_id_t> pool;
   size_t num_pages;
   bool ShouldUnPinFrame(frame_id_t frame_id);

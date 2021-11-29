@@ -20,6 +20,7 @@ LRUReplacer::LRUReplacer(size_t num_pages) { this->num_pages = num_pages; }
 LRUReplacer::~LRUReplacer() = default;
 
 bool LRUReplacer::Victim(frame_id_t *frame_id) {
+  std::lock_guard<std::mutex> lock(latch_);
   bool should_victim = !pool.empty();
   if (should_victim) {
     *frame_id = pool.front();
@@ -29,6 +30,7 @@ bool LRUReplacer::Victim(frame_id_t *frame_id) {
 }
 
 void LRUReplacer::Pin(frame_id_t frame_id) {
+  std::lock_guard<std::mutex> lock(latch_);
   queue tmp_pool = pool;
   queue<frame_id_t> new_pool;
   frame_id_t q_element;
@@ -43,12 +45,14 @@ void LRUReplacer::Pin(frame_id_t frame_id) {
 }
 
 void LRUReplacer::Unpin(frame_id_t frame_id) {
+  std::lock_guard<std::mutex> lock(latch_);
   if (ShouldUnPinFrame(frame_id)) {
     pool.push(frame_id);
   }
 }
 
 bool LRUReplacer::ShouldUnPinFrame(frame_id_t frame_id) {
+  std::lock_guard<std::mutex> lock(latch_);
   bool should_bin = Size() < num_pages;
   if (should_bin) {
     queue tmp_pool = pool;

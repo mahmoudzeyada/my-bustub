@@ -35,6 +35,7 @@ BufferPoolManager::~BufferPoolManager() {
 }
 
 Page *BufferPoolManager::FetchPageImpl(page_id_t page_id) {
+  std::lock_guard<std::mutex> lock(latch_);
   auto iterator = page_table_.find(page_id);
   if (iterator != page_table_.end()) {
     replacer_->Pin(iterator->second);
