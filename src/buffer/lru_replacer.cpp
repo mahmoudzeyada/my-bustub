@@ -9,68 +9,95 @@
 // Copyright (c) 2015-2019, Carnegie Mellon University Database Group
 //
 //===----------------------------------------------------------------------===//
-
+#include <iostream>
 #include "buffer/lru_replacer.h"
-#include <queue>
+#include "common/logger.h"
+
 
 namespace bustub {
 
-LRUReplacer::LRUReplacer(size_t num_pages) { this->num_pages = num_pages; }
+LRUReplacer::LRUReplacer(size_t num_pages) { 
+  this->num_pages = num_pages; 
+  pool_.clear();
+  ref_table_.clear();
+}
 
 LRUReplacer::~LRUReplacer() = default;
 
 bool LRUReplacer::Victim(frame_id_t *frame_id) {
   std::lock_guard<std::mutex> lock(latch_);
-  bool should_victim = !pool.empty();
-  if (should_victim) {
-    *frame_id = pool.front();
-    pool.pop();
+  if (pool_.empty()) {
+    return false;
+  }    
+  auto should_stop = false;
+  while(!should_stop) {  
+    auto frame_id_item = *(pool_.begin());
+    auto pair = ref_table_.find(frame_id_item);
+    if (pair->second) {
+      ref_table_[frame_id_item] = false;
+    } else {
+      *frame_id = frame_id_item;
+      PinFrame(*frame_id);
+      should_stop = true;
+    }
+    IncreaseClockHand();
   }
-  return should_victim;
+  return true;
 }
 
 void LRUReplacer::Pin(frame_id_t frame_id) {
   std::lock_guard<std::mutex> lock(latch_);
-  queue tmp_pool = pool;
-  queue<frame_id_t> new_pool;
-  frame_id_t q_element;
-  while (!tmp_pool.empty()) {
-    q_element = tmp_pool.front();
-    if (q_element != frame_id) {
-      new_pool.push(q_element);
+  PinFrame(frame_id);
+}
+
+void LRUReplacer::PinFrame(frame_id_t frame_id) {
+  auto iterator = ref_table_.find(frame_id);
+  bool is_found = iterator != ref_table_.end();
+  if (is_found) {
+    ref_table_.erase(frame_id);
+    for (size_t i = 0; i < pool_.size(); i++) {
+      auto frame_id_item = pool_.at(i);
+      if(frame_id_item == frame_id) {
+        pool_.erase(pool_.begin() + i);
+        if (i == clock_hand_) {
+          IncreaseClockHand();
+        }
+        break;
+      }
     }
-    tmp_pool.pop();
   }
-  pool = new_pool;
+}
+
+void LRUReplacer::IncreaseClockHand() {
+  if (clock_hand_ == num_pages - 1 ) {
+    clock_hand_ = 0;
+  } else {
+    clock_hand_++;
+  }
 }
 
 void LRUReplacer::Unpin(frame_id_t frame_id) {
   std::lock_guard<std::mutex> lock(latch_);
-  if (ShouldUnPinFrame(frame_id)) {
-    pool.push(frame_id);
-  }
-}
-
-bool LRUReplacer::ShouldUnPinFrame(frame_id_t frame_id) {
-  bool should_bin = pool.size() < num_pages;
-  if (should_bin) {
-    queue tmp_pool = pool;
-    frame_id_t q_element;
-    while (!tmp_pool.empty()) {
-      q_element = tmp_pool.front();
-      if (q_element == frame_id) {
-        should_bin = false;
-        break;
-      }
-      tmp_pool.pop();
+  auto iterator = ref_table_.find(frame_id);
+  bool is_already_found = iterator != ref_table_.end();
+  auto has_space = pool_.size() < num_pages;
+  auto isFirstFrame = pool_.size() == 0;
+  if (is_already_found) {
+    ref_table_[frame_id] = true;
+  } else if (has_space) {
+    pool_.emplace_back(frame_id);
+    auto pair = std::make_pair(frame_id, true);
+    ref_table_.emplace(pair);
+    if (isFirstFrame) {
+      clock_hand_ = 0;
     }
   }
-  return should_bin;
+  
 }
 
 size_t LRUReplacer::Size() { 
   std::lock_guard<std::mutex> lock(latch_);
-  return pool.size(); 
+  return pool_.size(); 
 }
 
 }  // namespace bustub

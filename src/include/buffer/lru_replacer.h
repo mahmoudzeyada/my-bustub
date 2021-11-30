@@ -14,8 +14,8 @@
 
 #include <list>
 #include <mutex>  // NOLINT
-#include <queue>
 #include <vector>
+#include <unordered_map>
 
 #include "buffer/replacer.h"
 #include "common/config.h"
@@ -25,6 +25,7 @@ using namespace std;
 /**
  * LRUReplacer implements the lru replacement policy, which approximates the Least Recently Used policy.
  */
+
 class LRUReplacer : public Replacer {
  public:
   /**
@@ -48,9 +49,12 @@ class LRUReplacer : public Replacer {
 
  private:
   std::mutex latch_;
-  queue<frame_id_t> pool;
+  vector<frame_id_t> pool_;
+  std::unordered_map<frame_id_t, bool> ref_table_;
   size_t num_pages;
-  bool ShouldUnPinFrame(frame_id_t frame_id);
+  size_t clock_hand_ = -1;
+  void IncreaseClockHand();
+  void PinFrame(frame_id_t frame_id);
 };
 
 }  // namespace bustub
