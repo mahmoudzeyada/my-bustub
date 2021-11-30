@@ -29,20 +29,28 @@ bool LRUReplacer::Victim(frame_id_t *frame_id) {
   if (pool_.empty()) {
     return false;
   }    
-  auto should_stop = false;
-  while(!should_stop) {  
-    auto frame_id_item = *(pool_.begin());
+  while(true) {  
+    auto frame_id_item = pool_.at(clock_hand_);
     auto pair = ref_table_.find(frame_id_item);
     if (pair->second) {
       ref_table_[frame_id_item] = false;
+      IncreaseClockHand();
     } else {
       *frame_id = frame_id_item;
       PinFrame(*frame_id);
-      should_stop = true;
+      break;
     }
-    IncreaseClockHand();
   }
   return true;
+}
+
+
+void LRUReplacer::IncreaseClockHand() {
+  if (clock_hand_ == pool_.size() - 1 ) {
+    clock_hand_ = 0;
+  } else {
+    clock_hand_++;
+  }
 }
 
 void LRUReplacer::Pin(frame_id_t frame_id) {
@@ -59,20 +67,18 @@ void LRUReplacer::PinFrame(frame_id_t frame_id) {
       auto frame_id_item = pool_.at(i);
       if(frame_id_item == frame_id) {
         pool_.erase(pool_.begin() + i);
-        if (i == clock_hand_) {
-          IncreaseClockHand();
-        }
+        DecreaseClockHand();
         break;
       }
     }
   }
 }
 
-void LRUReplacer::IncreaseClockHand() {
-  if (clock_hand_ == num_pages - 1 ) {
+void LRUReplacer::DecreaseClockHand() {
+  if (clock_hand_ == 0 ) {
     clock_hand_ = 0;
   } else {
-    clock_hand_++;
+    clock_hand_--;
   }
 }
 
@@ -85,7 +91,7 @@ void LRUReplacer::Unpin(frame_id_t frame_id) {
   if (is_already_found) {
     ref_table_[frame_id] = true;
   } else if (has_space) {
-    pool_.emplace_back(frame_id);
+    pool_.push_back(frame_id);
     auto pair = std::make_pair(frame_id, true);
     ref_table_.emplace(pair);
     if (isFirstFrame) {

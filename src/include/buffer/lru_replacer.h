@@ -54,6 +54,7 @@ class LRUReplacer : public Replacer {
   size_t num_pages;
   size_t clock_hand_ = -1;
   void IncreaseClockHand();
+  void DecreaseClockHand();
   void PinFrame(frame_id_t frame_id);
 };
 
