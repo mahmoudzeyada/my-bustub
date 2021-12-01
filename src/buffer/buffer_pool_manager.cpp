@@ -85,10 +85,14 @@ bool BufferPoolManager::FlushPageImpl(page_id_t page_id) {
 
 Page *BufferPoolManager::NewPageImpl(page_id_t *page_id) {
   std::lock_guard<std::mutex> lock(latch_);
-  if (IsAllBinned()) { return nullptr; }
+  if (IsAllBinned()) {
+    return nullptr;
+  }
   auto frame_id = Victim();
 
-  if (frame_id == -1) { return nullptr; }
+  if (frame_id == -1) {
+    return nullptr;
+  }
   *page_id = disk_manager_->AllocatePage();
   auto page = ProcessNewPage(frame_id, *page_id);
   return page;

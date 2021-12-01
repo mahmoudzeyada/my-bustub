@@ -9,15 +9,14 @@
 // Copyright (c) 2015-2019, Carnegie Mellon University Database Group
 //
 //===----------------------------------------------------------------------===//
-#include <iostream>
 #include "buffer/lru_replacer.h"
+#include <iostream>
 #include "common/logger.h"
-
 
 namespace bustub {
 
-LRUReplacer::LRUReplacer(size_t num_pages) { 
-  this->num_pages = num_pages; 
+LRUReplacer::LRUReplacer(size_t num_pages) {
+  this->num_pages = num_pages;
   pool_.clear();
   ref_table_.clear();
 }
@@ -28,8 +27,8 @@ bool LRUReplacer::Victim(frame_id_t *frame_id) {
   std::lock_guard<std::mutex> lock(latch_);
   if (pool_.empty()) {
     return false;
-  }    
-  while(true) {  
+  }
+  while (true) {
     auto frame_id_item = pool_.at(clock_hand_);
     auto pair = ref_table_.find(frame_id_item);
     if (pair->second) {
@@ -44,9 +43,8 @@ bool LRUReplacer::Victim(frame_id_t *frame_id) {
   return true;
 }
 
-
 void LRUReplacer::IncreaseClockHand() {
-  if (clock_hand_ == pool_.size() - 1 ) {
+  if (clock_hand_ == pool_.size() - 1) {
     clock_hand_ = 0;
   } else {
     clock_hand_++;
@@ -65,7 +63,7 @@ void LRUReplacer::PinFrame(frame_id_t frame_id) {
     ref_table_.erase(frame_id);
     for (size_t i = 0; i < pool_.size(); i++) {
       auto frame_id_item = pool_.at(i);
-      if(frame_id_item == frame_id) {
+      if (frame_id_item == frame_id) {
         pool_.erase(pool_.begin() + i);
         DecreaseClockHand();
         break;
@@ -75,7 +73,7 @@ void LRUReplacer::PinFrame(frame_id_t frame_id) {
 }
 
 void LRUReplacer::DecreaseClockHand() {
-  if (clock_hand_ == 0 ) {
+  if (clock_hand_ == 0) {
     clock_hand_ = 0;
   } else {
     clock_hand_--;
@@ -87,7 +85,7 @@ void LRUReplacer::Unpin(frame_id_t frame_id) {
   auto iterator = ref_table_.find(frame_id);
   bool is_already_found = iterator != ref_table_.end();
   auto has_space = pool_.size() < num_pages;
-  auto isFirstFrame = pool_.size() == 0;
+  auto isFirstFrame = pool_.empty();
   if (is_already_found) {
     ref_table_[frame_id] = true;
   } else if (has_space) {
@@ -98,12 +96,11 @@ void LRUReplacer::Unpin(frame_id_t frame_id) {
       clock_hand_ = 0;
     }
   }
-  
 }
 
-size_t LRUReplacer::Size() { 
+size_t LRUReplacer::Size() {
   std::lock_guard<std::mutex> lock(latch_);
-  return pool_.size(); 
+  return pool_.size();
 }
 
 }  // namespace bustub
