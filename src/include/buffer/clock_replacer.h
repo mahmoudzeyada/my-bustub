@@ -15,11 +15,14 @@
 #include <list>
 #include <mutex>  // NOLINT
 #include <vector>
+#include <unordered_map>
 
 #include "buffer/replacer.h"
 #include "common/config.h"
 
 namespace bustub {
+using namespace std;
+
 
 /**
  * ClockReplacer implements the clock replacement policy, which approximates the Least Recently Used policy.
@@ -46,7 +49,14 @@ class ClockReplacer : public Replacer {
   size_t Size() override;
 
  private:
-  // TODO(student): implement me!
+  std::mutex latch_;
+  vector<frame_id_t> pool_;
+  std::unordered_map<frame_id_t, bool> ref_table_;
+  size_t num_pages;
+  size_t clock_hand_ = -1;
+  void IncreaseClockHand();
+  void DecreaseClockHand();
+  void PinFrame(frame_id_t frame_id);
 };
 
 }  // namespace bustub

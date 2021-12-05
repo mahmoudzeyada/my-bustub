@@ -64,7 +64,6 @@ bool BufferPoolManager::UnpinPageImpl(page_id_t page_id, bool is_dirty) {
 }
 
 void BufferPoolManager::FlushAllPagesImpl() {
-  std::lock_guard<std::mutex> lock(latch_);
   for (auto &it : page_table_) {
     auto page_id = it.first;
     FlushPageImpl(page_id);
@@ -157,3 +156,8 @@ bool BufferPoolManager::DeletePageImpl(page_id_t page_id) {
 }
 
 }  // namespace bustub
+
+
+
+       
+

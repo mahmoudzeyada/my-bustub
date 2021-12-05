@@ -50,12 +50,7 @@ class LRUReplacer : public Replacer {
  private:
   std::mutex latch_;
   vector<frame_id_t> pool_;
-  std::unordered_map<frame_id_t, bool> ref_table_;
-  size_t num_pages;
-  size_t clock_hand_ = -1;
-  void IncreaseClockHand();
-  void DecreaseClockHand();
-  void PinFrame(frame_id_t frame_id);
+  size_t num_pages_;
 };
 
 }  // namespace bustub
